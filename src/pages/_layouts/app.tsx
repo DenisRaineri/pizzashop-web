@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 
 import { Header } from "@/components/header";
@@ -8,7 +8,7 @@ import { api } from "@/lib/axios";
 export function AppLayout() {
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const interceptorId = api.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -16,10 +16,16 @@ export function AppLayout() {
           const status = error.response?.status;
           const code = error.response?.data.code;
 
-          if (status == 401 && code == "UNAUTHORIZED") {
-            navigate("/sign-in", { replace: true });
+          if (status === 401 && code === "UNAUTHORIZED") {
+            navigate("/sign-in", {
+              replace: true,
+            });
+          } else {
+            throw error;
           }
         }
+
+        return Promise.reject(error);
       },
     );
 
@@ -29,9 +35,8 @@ export function AppLayout() {
   }, [navigate]);
 
   return (
-    <div className="antialised flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col antialiased">
       <Header />
-
       <div className="flex flex-1 flex-col gap-4 p-8 pt-6">
         <Outlet />
       </div>
